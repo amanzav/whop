@@ -1,6 +1,6 @@
 "use client";
 
-import { use } from "react";
+import { use, useMemo } from "react";
 import Link from "next/link";
 
 import { useStore } from "@/lib/store";
@@ -34,8 +34,10 @@ export default function ProfileController({
 
   const user = useStore((s) => s.users.find((u) => u.id === id));
   const users = useStore((s) => s.users);
-  const reviews = useStore((s) =>
-    s.reviews.filter((r) => r.targetId === id),
+  const allReviews = useStore((s) => s.reviews);
+  const reviews = useMemo(
+    () => allReviews.filter((r) => r.targetId === id),
+    [allReviews, id],
   );
 
   if (!user) {
