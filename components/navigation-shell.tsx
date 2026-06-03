@@ -2,23 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
-import { useHydrated } from "@/lib/hooks/use-hydrated";
-import type { Persona } from "@/lib/types";
-import { PersonaSwitcher } from "@/components/persona-switcher";
+import type { Role } from "@/lib/types";
+import { AuthControl } from "@/components/auth-control";
+import { RoleContextSwitcher } from "@/components/role-context-switcher";
 
 interface NavLink {
   label: string;
   href: string;
 }
 
-const NAV_BY_PERSONA: Record<Persona, NavLink[]> = {
-  guest: [
-    { label: "Browse Gigs", href: "/" },
-    { label: "Task Board", href: "/tasks" },
-  ],
+const GUEST_LINKS: NavLink[] = [
+  { label: "Browse Gigs", href: "/" },
+  { label: "Task Board", href: "/tasks" },
+];
+
+const LINKS_BY_ROLE: Record<Role, NavLink[]> = {
   buyer: [
     { label: "Browse Gigs", href: "/" },
     { label: "Task Board", href: "/tasks" },
@@ -41,11 +43,12 @@ const isActive = (pathname: string, href: string): boolean => {
 };
 
 export function NavigationShell() {
-  const persona = useStore((s) => s.persona);
+  const { status } = useSession();
+  const role = useStore((s) => s.role);
   const pathname = usePathname();
-  const hydrated = useHydrated();
-  const active: Persona = hydrated ? persona : "guest";
-  const links = NAV_BY_PERSONA[active];
+
+  const authenticated = status === "authenticated";
+  const links = authenticated ? LINKS_BY_ROLE[role] : GUEST_LINKS;
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
@@ -74,7 +77,8 @@ export function NavigationShell() {
           ))}
         </nav>
 
-        <PersonaSwitcher />
+        <RoleContextSwitcher />
+        <AuthControl />
       </div>
     </header>
   );

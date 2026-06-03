@@ -24,15 +24,13 @@ interface ChatControllerProps {
 export function ChatController({ orderId }: ChatControllerProps) {
   const messages = useStore((s) => s.messages);
   const users = useStore((s) => s.users);
-  const persona = useStore((s) => s.persona);
-  const buyerUserId = useStore((s) => s.buyerUserId);
-  const sellerUserId = useStore((s) => s.sellerUserId);
+  const currentUserId = useStore((s) => s.currentUserId);
   const sendMessage = useStore((s) => s.sendMessage);
 
   const [draft, setDraft] = useState("");
 
-  // Buyer and guest act as the buyer participant; seller acts as the seller.
-  const senderId = persona === "seller" ? sellerUserId : buyerUserId;
+  // The signed-in user is the sender. Guests (null) cannot chat.
+  const senderId = currentUserId;
 
   // Scope to this order and sort chronologically (defensive — appended in order).
   const orderMessages = useMemo(
@@ -47,6 +45,7 @@ export function ChatController({ orderId }: ChatControllerProps) {
   );
 
   const handleSend = () => {
+    if (!senderId) return;
     const body = draft.trim();
     if (!body) return;
     sendMessage(orderId, senderId, body);
@@ -59,14 +58,20 @@ export function ChatController({ orderId }: ChatControllerProps) {
         <CardTitle>Messages</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChatThread
-          messages={orderMessages}
-          users={users}
-          currentSenderId={senderId}
-          value={draft}
-          onChange={setDraft}
-          onSend={handleSend}
-        />
+        {senderId ? (
+          <ChatThread
+            messages={orderMessages}
+            users={users}
+            currentSenderId={senderId}
+            value={draft}
+            onChange={setDraft}
+            onSend={handleSend}
+          />
+        ) : (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            Sign in to view and send messages on this order.
+          </p>
+        )}
       </CardContent>
     </Card>
   );

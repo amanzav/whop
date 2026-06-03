@@ -104,7 +104,17 @@ function OrderRow({
   );
 }
 
-function EmptyState({ message, hint }: { message: string; hint: string }) {
+function EmptyState({
+  message,
+  hint,
+  linkHref = "/",
+  linkLabel = "Browse gigs",
+}: {
+  message: string;
+  hint: string;
+  linkHref?: string;
+  linkLabel?: string;
+}) {
   return (
     <div className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card px-6 py-16 text-center">
       <Package className="size-8 text-muted-foreground" />
@@ -115,10 +125,10 @@ function EmptyState({ message, hint }: { message: string; hint: string }) {
         <p className="max-w-sm text-sm text-muted-foreground">{hint}</p>
       </div>
       <Link
-        href="/"
+        href={linkHref}
         className="text-sm font-medium text-primary underline-offset-4 hover:underline"
       >
-        Browse gigs
+        {linkLabel}
       </Link>
     </div>
   );
@@ -127,9 +137,10 @@ function EmptyState({ message, hint }: { message: string; hint: string }) {
 export default function OrdersController() {
   const orders = useStore((s) => s.orders);
   const users = useStore((s) => s.users);
-  const persona = useStore((s) => s.persona);
-  const buyerUserId = useStore((s) => s.buyerUserId);
-  const sellerUserId = useStore((s) => s.sellerUserId);
+  const currentUserId = useStore((s) => s.currentUserId);
+  const role = useStore((s) => s.role);
+
+  const isBuyerView = role === "buyer";
 
   const usersById = useMemo(() => {
     const map = new Map<string, User>();
@@ -137,27 +148,19 @@ export default function OrdersController() {
     return map;
   }, [users]);
 
-  // Active persona user; null for guest.
-  const activeUserId =
-    persona === "buyer"
-      ? buyerUserId
-      : persona === "seller"
-        ? sellerUserId
-        : null;
-
-  // Orders where the active persona user is a participant on the matching side.
+  // Orders where the signed-in user is a participant on the matching side.
   const myOrders = useMemo(() => {
-    if (!activeUserId) return [];
-    if (persona === "buyer") {
-      return orders.filter((o) => o.buyerId === activeUserId);
+    if (!currentUserId) return [];
+    if (isBuyerView) {
+      return orders.filter((o) => o.buyerId === currentUserId);
     }
-    return orders.filter((o) => o.sellerId === activeUserId);
-  }, [orders, activeUserId, persona]);
+    return orders.filter((o) => o.sellerId === currentUserId);
+  }, [orders, currentUserId, isBuyerView]);
 
   // Counterparty is the other side of the order, relative to the active view.
-  const counterpartyLabel = persona === "buyer" ? "Seller:" : "Buyer:";
+  const counterpartyLabel = isBuyerView ? "Seller:" : "Buyer:";
   const counterpartyNameFor = (order: Order): string => {
-    const id = persona === "buyer" ? order.sellerId : order.buyerId;
+    const id = isBuyerView ? order.sellerId : order.buyerId;
     return usersById.get(id)?.name ?? "Unknown";
   };
 
@@ -178,23 +181,25 @@ export default function OrdersController() {
           Orders
         </h1>
         <p className="text-base text-muted-foreground">
-          {persona === "guest"
-            ? "Switch to a buyer or seller persona to track your orders."
+          {!currentUserId
+            ? "Sign in to track your orders."
             : "Track your active and past orders and their escrow status."}
         </p>
       </section>
 
       <section className="mt-8 flex flex-col gap-8">
-        {persona === "guest" ? (
+        {!currentUserId ? (
           <EmptyState
-            message="No orders to show"
-            hint="Switch to the buyer or seller persona to see orders you're part of."
+            message="Sign in to view your orders"
+            hint="Once you're signed in, the orders you're part of will show up here."
+            linkHref="/signin"
+            linkLabel="Sign in"
           />
         ) : myOrders.length === 0 ? (
           <EmptyState
             message="No orders yet"
             hint={
-              persona === "buyer"
+              isBuyerView
                 ? "When you buy a gig or accept an offer, your orders will show up here."
                 : "When a buyer hires you or accepts your offer, your orders will show up here."
             }

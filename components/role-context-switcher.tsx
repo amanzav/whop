@@ -1,39 +1,43 @@
 "use client";
 
-import { Eye, ShoppingBag, Store } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { ShoppingBag, Store } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
-import { useHydrated } from "@/lib/hooks/use-hydrated";
-import type { Persona } from "@/lib/types";
+import type { Role } from "@/lib/types";
 
-const OPTIONS: { value: Persona; label: string; icon: typeof Eye }[] = [
-  { value: "guest", label: "Guest", icon: Eye },
+const OPTIONS: { value: Role; label: string; icon: typeof Store }[] = [
   { value: "buyer", label: "Buyer", icon: ShoppingBag },
   { value: "seller", label: "Seller", icon: Store },
 ];
 
-export function PersonaSwitcher() {
-  const persona = useStore((s) => s.persona);
-  const setPersona = useStore((s) => s.setPersona);
-  const hydrated = useHydrated();
-  const active: Persona = hydrated ? persona : "guest";
+/**
+ * RoleContextSwitcher — Buyer/Seller toggle, visible to authenticated users
+ * only. Switching is instantaneous (no confirmation, no reload).
+ */
+export function RoleContextSwitcher() {
+  const { status } = useSession();
+  const role = useStore((s) => s.role);
+  const setRole = useStore((s) => s.setRole);
+
+  if (status !== "authenticated") return null;
 
   return (
     <div
       role="tablist"
-      aria-label="Persona switcher"
+      aria-label="Role context"
       className="inline-flex items-center gap-0.5 rounded-full border border-border bg-card p-0.5"
     >
       {OPTIONS.map(({ value, label, icon: Icon }) => {
-        const selected = active === value;
+        const selected = role === value;
         return (
           <button
             key={value}
             type="button"
             role="tab"
             aria-selected={selected}
-            onClick={() => setPersona(value)}
+            onClick={() => setRole(value)}
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
               selected

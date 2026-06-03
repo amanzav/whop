@@ -2,7 +2,9 @@
 // Dates are stored as ISO strings so the full state serializes cleanly to
 // localStorage via the Zustand persist middleware.
 
-export type Persona = "guest" | "buyer" | "seller";
+// Authenticated users act in one of two role contexts. Unauthenticated
+// visitors are "Guest" — represented by a null currentUserId, not a role value.
+export type Role = "buyer" | "seller";
 
 export type OrderStatus =
   | "held"
@@ -24,6 +26,8 @@ export type ReviewDirection = "of_seller" | "of_buyer";
 export interface User {
   id: string;
   name: string;
+  /** Login email for the credentials provider. */
+  email: string;
   avatar: string;
   bio: string;
   /** Human-readable role capabilities, e.g. ["Buyer", "Seller"]. */

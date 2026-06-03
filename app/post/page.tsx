@@ -28,9 +28,12 @@ interface FieldErrors {
 
 export default function PostTaskController() {
   const router = useRouter();
-  const persona = useStore((s) => s.persona);
+  const currentUserId = useStore((s) => s.currentUserId);
+  const role = useStore((s) => s.role);
   const categories = useStore((s) => s.categories);
   const postTask = useStore((s) => s.postTask);
+
+  const isBuyer = !!currentUserId && role === "buyer";
 
   const [title, setTitle] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -39,22 +42,27 @@ export default function PostTaskController() {
   const [budgetMax, setBudgetMax] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
 
-  if (persona !== "buyer") {
+  if (!isBuyer) {
     return (
       <main className="mx-auto w-full max-w-2xl px-4 py-10">
         <div className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card px-6 py-16 text-center">
           <Lock className="size-8 text-muted-foreground" />
           <div className="flex flex-col gap-1">
             <p className="font-heading text-base font-medium text-foreground">
-              Switch to Buyer mode to post a task
+              {currentUserId
+                ? "Switch to Buyer role to post a task"
+                : "Sign in as a buyer to post a task"}
             </p>
             <p className="max-w-sm text-sm text-muted-foreground">
-              Posting a task is only available in Buyer mode. Use the persona
-              switcher to act as a buyer, then post the work you need done.
+              {currentUserId
+                ? "Posting a task is only available in the Buyer role. Switch to the Buyer role, then post the work you need done."
+                : "Posting a task requires signing in as a buyer. Sign in to post the work you need done."}
             </p>
           </div>
           <Button asChild variant="outline">
-            <Link href="/tasks">Back to Task Board</Link>
+            <Link href={currentUserId ? "/tasks" : "/signin"}>
+              {currentUserId ? "Back to Task Board" : "Sign in"}
+            </Link>
           </Button>
         </div>
       </main>
@@ -107,7 +115,7 @@ export default function PostTaskController() {
       budgetMin: min,
       budgetMax: max,
     });
-    router.push(`/task/${created.id}`);
+    if (created) router.push(`/task/${created.id}`);
   };
 
   return (

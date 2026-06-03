@@ -23,7 +23,7 @@ const dateLabel = (iso: string): string =>
     day: "numeric",
   });
 
-function GatedState() {
+function GatedState({ signedIn }: { signedIn: boolean }) {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-10">
       <div className="flex flex-col items-center gap-4 rounded-xl border border-border bg-card px-6 py-16 text-center">
@@ -33,7 +33,9 @@ function GatedState() {
             Seller analytics
           </h1>
           <p className="max-w-sm text-sm text-muted-foreground">
-            The analytics dashboard is only available in Seller mode.
+            {signedIn
+              ? "The analytics dashboard is only available in Seller mode."
+              : "Sign in as a seller to view your analytics dashboard."}
           </p>
         </div>
       </div>
@@ -47,29 +49,29 @@ function GatedState() {
  * conversion rate synchronously on every render. Triggers no store mutations.
  */
 export default function SellerDashboardController() {
-  const persona = useStore((s) => s.persona);
-  const sellerUserId = useStore((s) => s.sellerUserId);
+  const currentUserId = useStore((s) => s.currentUserId);
+  const role = useStore((s) => s.role);
   const orders = useStore((s) => s.orders);
   const offers = useStore((s) => s.offers);
   const reviews = useStore((s) => s.reviews);
 
-  const isSeller = persona === "seller";
+  const isSeller = !!currentUserId && role === "seller";
 
-  // Seller's slices of the store.
+  // Seller's slices of the store. The seller is the signed-in user.
   const sellerOrders = useMemo(
-    () => orders.filter((o) => o.sellerId === sellerUserId),
-    [orders, sellerUserId],
+    () => orders.filter((o) => o.sellerId === currentUserId),
+    [orders, currentUserId],
   );
   const sellerOffers = useMemo(
-    () => offers.filter((o) => o.sellerId === sellerUserId),
-    [offers, sellerUserId],
+    () => offers.filter((o) => o.sellerId === currentUserId),
+    [offers, currentUserId],
   );
   const sellerReviews = useMemo(
     () =>
       reviews.filter(
-        (r) => r.targetId === sellerUserId && r.direction === "of_seller",
+        (r) => r.targetId === currentUserId && r.direction === "of_seller",
       ),
-    [reviews, sellerUserId],
+    [reviews, currentUserId],
   );
 
   // --- Metrics ---
@@ -118,7 +120,7 @@ export default function SellerDashboardController() {
       .sort((a, b) => a.t - b.t);
   }, [sellerReviews]);
 
-  if (!isSeller) return <GatedState />;
+  if (!isSeller) return <GatedState signedIn={!!currentUserId} />;
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-10">

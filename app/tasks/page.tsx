@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { ClipboardList, Plus } from "lucide-react";
 
 import { useStore } from "@/lib/store";
@@ -9,11 +10,27 @@ import { Button } from "@/components/ui/button";
 import { CategoryPills } from "@/components/category-pills";
 import { TaskCard } from "@/components/task-card";
 
-export default function TaskBoardController() {
+export default function TaskBoardPage() {
+  // useSearchParams() requires a Suspense boundary during prerendering.
+  return (
+    <Suspense>
+      <TaskBoardController />
+    </Suspense>
+  );
+}
+
+function TaskBoardController() {
   const tasks = useStore((s) => s.tasks);
   const categories = useStore((s) => s.categories);
   const offers = useStore((s) => s.offers);
-  const persona = useStore((s) => s.persona);
+  const currentUserId = useStore((s) => s.currentUserId);
+  const role = useStore((s) => s.role);
+
+  const searchParams = useSearchParams();
+  const mine = searchParams.get("mine") === "1";
+
+  const isBuyer = !!currentUserId && role === "buyer";
+  const isSeller = !!currentUserId && role === "seller";
 
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
@@ -31,17 +48,29 @@ export default function TaskBoardController() {
     return map;
   }, [offers]);
 
-  const openTasks = useMemo(
-    () => tasks.filter((task) => task.status === "open"),
-    [tasks],
-  );
+  // Task ids the signed-in seller has submitted an offer on (for "My Offers").
+  const myOfferedTaskIds = useMemo(() => {
+    if (!currentUserId) return new Set<string>();
+    return new Set(
+      offers.filter((o) => o.sellerId === currentUserId).map((o) => o.taskId),
+    );
+  }, [offers, currentUserId]);
+
+  const baseTasks = useMemo(() => {
+    // Seller "My Offers" view: tasks this seller has offered on (any status).
+    if (isSeller && mine) {
+      return tasks.filter((task) => myOfferedTaskIds.has(task.id));
+    }
+    // Default: all open tasks.
+    return tasks.filter((task) => task.status === "open");
+  }, [tasks, isSeller, mine, myOfferedTaskIds]);
 
   const filtered = useMemo(
     () =>
       activeCategoryId
-        ? openTasks.filter((task) => task.categoryId === activeCategoryId)
-        : openTasks,
-    [openTasks, activeCategoryId],
+        ? baseTasks.filter((task) => task.categoryId === activeCategoryId)
+        : baseTasks,
+    [baseTasks, activeCategoryId],
   );
 
   return (
@@ -57,7 +86,7 @@ export default function TaskBoardController() {
               your skills.
             </p>
           </div>
-          {persona === "buyer" && (
+          {isBuyer && (
             <Button asChild>
               <Link href="/post">
                 <Plus />
@@ -99,7 +128,7 @@ export default function TaskBoardController() {
                   : "There are no open tasks right now. Check back soon."}
               </p>
             </div>
-            {persona === "buyer" && (
+            {isBuyer && (
               <Button asChild>
                 <Link href="/post">
                   <Plus />

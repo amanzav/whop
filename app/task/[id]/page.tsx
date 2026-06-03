@@ -49,13 +49,16 @@ export default function TaskDetailController({
   const { id } = use(params);
   const router = useRouter();
 
-  const persona = useStore((s) => s.persona);
+  const currentUserId = useStore((s) => s.currentUserId);
+  const role = useStore((s) => s.role);
   const tasks = useStore((s) => s.tasks);
   const offers = useStore((s) => s.offers);
   const users = useStore((s) => s.users);
   const categories = useStore((s) => s.categories);
-  const sellerUserId = useStore((s) => s.sellerUserId);
   const acceptOffer = useStore((s) => s.acceptOffer);
+
+  const isBuyer = !!currentUserId && role === "buyer";
+  const isSeller = !!currentUserId && role === "seller";
 
   const task = tasks.find((t) => t.id === id);
 
@@ -83,10 +86,11 @@ export default function TaskDetailController({
   const pendingOffers = taskOffers.filter((o) => o.status === "pending");
   const hasAcceptedOffer = taskOffers.some((o) => o.status === "accepted");
 
-  const sellerUser = users.find((u) => u.id === sellerUserId);
-  const alreadyOffered = taskOffers.some((o) => o.sellerId === sellerUserId);
+  // The acting seller is the signed-in user (null = guest).
+  const sellerUser = users.find((u) => u.id === currentUserId);
+  const alreadyOffered = taskOffers.some((o) => o.sellerId === currentUserId);
   const mySubmittedOffer = taskOffers.find(
-    (o) => o.sellerId === sellerUserId,
+    (o) => o.sellerId === currentUserId,
   );
 
   const handleAccept = (offerId: string) => {
@@ -129,7 +133,7 @@ export default function TaskDetailController({
 
       <Separator className="my-8" />
 
-      {persona === "buyer" && (
+      {isBuyer && (
         <BuyerView
           recommendedSellers={rankSellersForTask(task, sellers)}
           pendingOffers={pendingOffers}
@@ -140,7 +144,7 @@ export default function TaskDetailController({
         />
       )}
 
-      {persona === "seller" && sellerUser && (
+      {isSeller && sellerUser && (
         <SellerView
           match={scoreMatch(task, sellerUser)}
           taskId={task.id}

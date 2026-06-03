@@ -2,11 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { toast } from "sonner";
 
-import {
-  seed,
-  BUYER_USER_ID,
-  SELLER_USER_ID,
-} from "@/lib/data/seed";
+import { seed } from "@/lib/data/seed";
 import type {
   Category,
   Message,
@@ -14,8 +10,8 @@ import type {
   Order,
   OrderStatus,
   PackageTier,
-  Persona,
   Review,
+  Role,
   Service,
   Task,
   User,
@@ -87,15 +83,21 @@ interface DomainState {
   orders: Order[];
   reviews: Review[];
   messages: Message[];
-  persona: Persona;
-  buyerUserId: string;
-  sellerUserId: string;
+  /** Active role context for the signed-in user. */
+  role: Role;
+  /** Signed-in user id, hydrated from the NextAuth session. null = Guest. */
+  currentUserId: string | null;
 
-  setPersona: (persona: Persona) => void;
-  /** Resolve the acting user id for the active persona (null for guest). */
-  activeUserId: () => string | null;
+  setRole: (role: Role) => void;
+  /**
+   * Sync the signed-in identity from the auth session. Passing a user id signs
+   * in (defaulting the role to "buyer"); passing null signs out. The role only
+   * resets when the identity actually changes, preserving a chosen role across
+   * reloads of the same session.
+   */
+  setCurrentUser: (userId: string | null) => void;
 
-  postTask: (data: PostTaskInput) => Task;
+  postTask: (data: PostTaskInput) => Task | null;
   submitOffer: (taskId: string, data: SubmitOfferInput) => Offer | null;
   acceptOffer: (offerId: string) => string | null;
   buyGig: (serviceId: string, packageTier: PackageTier) => string | null;
@@ -137,23 +139,25 @@ export const useStore = create<DomainState>()(
       orders: seed.orders,
       reviews: seed.reviews,
       messages: seed.messages,
-      persona: "guest",
-      buyerUserId: BUYER_USER_ID,
-      sellerUserId: SELLER_USER_ID,
+      role: "buyer",
+      currentUserId: null,
 
-      setPersona: (persona) => set({ persona }),
+      setRole: (role) => set({ role }),
 
-      activeUserId: () => {
-        const { persona, buyerUserId, sellerUserId } = get();
-        if (persona === "buyer") return buyerUserId;
-        if (persona === "seller") return sellerUserId;
-        return null;
+      setCurrentUser: (userId) => {
+        if (userId === get().currentUserId) return;
+        set({
+          currentUserId: userId,
+          role: userId ? "buyer" : get().role,
+        });
       },
 
       postTask: (data) => {
+        const currentUserId = get().currentUserId;
+        if (!currentUserId) return null;
         const task: Task = {
           id: genId("task"),
-          buyerId: get().buyerUserId,
+          buyerId: currentUserId,
           title: data.title,
           description: data.description,
           categoryId: data.categoryId,
@@ -168,12 +172,14 @@ export const useStore = create<DomainState>()(
       },
 
       submitOffer: (taskId, data) => {
+        const currentUserId = get().currentUserId;
+        if (!currentUserId) return null;
         const task = get().tasks.find((t) => t.id === taskId);
         if (!task) return null;
         const offer: Offer = {
           id: genId("offer"),
           taskId,
-          sellerId: get().sellerUserId,
+          sellerId: currentUserId,
           price: data.price,
           deliveryDays: data.deliveryDays,
           message: data.message,
@@ -234,6 +240,7 @@ export const useStore = create<DomainState>()(
 
       buyGig: (serviceId, packageTier) => {
         const state = get();
+        if (!state.currentUserId) return null;
         const service = state.services.find((sv) => sv.id === serviceId);
         if (!service) return null;
         const pkg = service.packages.find((p) => p.tier === packageTier);
@@ -242,7 +249,7 @@ export const useStore = create<DomainState>()(
         const platformFee = Math.round(pkg.price * PLATFORM_FEE_RATE);
         const order: Order = {
           id: genId("order"),
-          buyerId: state.buyerUserId,
+          buyerId: state.currentUserId,
           sellerId: service.sellerId,
           title: `${pkg.name} — ${service.title}`,
           amount: pkg.price,
@@ -368,9 +375,8 @@ export const useStore = create<DomainState>()(
         orders: s.orders,
         reviews: s.reviews,
         messages: s.messages,
-        persona: s.persona,
-        buyerUserId: s.buyerUserId,
-        sellerUserId: s.sellerUserId,
+        role: s.role,
+        currentUserId: s.currentUserId,
       }),
     },
   ),

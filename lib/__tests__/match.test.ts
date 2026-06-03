@@ -14,6 +14,7 @@ const isoDaysAgo = (n: number) => new Date(Date.now() - n * day).toISOString();
 const makeUser = (overrides: Partial<User> = {}): User => ({
   id: "u_test",
   name: "Test Seller",
+  email: "test@example.com",
   avatar: "",
   bio: "",
   roles: ["Seller"],

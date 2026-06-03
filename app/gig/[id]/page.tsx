@@ -39,7 +39,6 @@ export default function GigDetailController({
   const service = useStore((s) => s.services.find((sv) => sv.id === id));
   const users = useStore((s) => s.users);
   const reviews = useStore((s) => s.reviews);
-  const persona = useStore((s) => s.persona);
 
   const [selectedTier, setSelectedTier] = useState<PackageTier>("standard");
 
@@ -221,7 +220,6 @@ export default function GigDetailController({
               selectedPackage={selectedPackage}
               serviceId={service.id}
               sellerName={seller.name}
-              persona={persona}
               onCancel={() => setSelectedTier("standard")}
             />
           )}

@@ -16,6 +16,7 @@ const SELLER = "u_seller";
 const seller = (): User => ({
   id: SELLER,
   name: "Seller",
+  email: "seller@example.com",
   avatar: "",
   bio: "",
   roles: ["Seller"],
@@ -83,8 +84,9 @@ const seedState = (partial: {
     orders: partial.orders ?? [],
     reviews: [],
     messages: [],
-    buyerUserId: BUYER,
-    sellerUserId: SELLER,
+    // Signed-in actor for actions that need a current user.
+    currentUserId: SELLER,
+    role: "seller",
   });
 };
 

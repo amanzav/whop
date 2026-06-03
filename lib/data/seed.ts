@@ -30,6 +30,7 @@ export const users: User[] = [
   {
     id: BUYER_USER_ID,
     name: "Jordan Blake",
+    email: "jordan@whop.test",
     avatar: "https://api.dicebear.com/9.x/glass/svg?seed=jordan",
     bio: "Founder building a paid community. Commissioning work to launch faster.",
     roles: ["Buyer"],
@@ -44,6 +45,7 @@ export const users: User[] = [
   {
     id: SELLER_USER_ID,
     name: "Avery Chen",
+    email: "avery@whop.test",
     avatar: "https://api.dicebear.com/9.x/glass/svg?seed=avery",
     bio: "Full-stack community + automation specialist. Whop power seller since day one.",
     roles: ["Seller", "Buyer"],
@@ -58,6 +60,7 @@ export const users: User[] = [
   {
     id: "u_maya",
     name: "Maya Rodriguez",
+    email: "maya@whop.test",
     avatar: "https://api.dicebear.com/9.x/glass/svg?seed=maya",
     bio: "Course architect. I turn your expertise into a polished, high-converting course.",
     roles: ["Seller"],
@@ -72,6 +75,7 @@ export const users: User[] = [
   {
     id: "u_dex",
     name: "Dex Okafor",
+    email: "dex@whop.test",
     avatar: "https://api.dicebear.com/9.x/glass/svg?seed=dex",
     bio: "Algo trader & bot dev. Custom trading bots with backtesting included.",
     roles: ["Seller"],
@@ -86,6 +90,7 @@ export const users: User[] = [
   {
     id: "u_lena",
     name: "Lena Voss",
+    email: "lena@whop.test",
     avatar: "https://api.dicebear.com/9.x/glass/svg?seed=lena",
     bio: "Brand designer for creators. Logos, kits, and Whop storefronts that pop.",
     roles: ["Seller"],
@@ -100,6 +105,7 @@ export const users: User[] = [
   {
     id: "u_kofi",
     name: "Kofi Mensah",
+    email: "kofi@whop.test",
     avatar: "https://api.dicebear.com/9.x/glass/svg?seed=kofi",
     bio: "Growth marketer. Paid acquisition and viral launch campaigns for communities.",
     roles: ["Seller"],
@@ -114,6 +120,7 @@ export const users: User[] = [
   {
     id: "u_rin",
     name: "Rin Takahashi",
+    email: "rin@whop.test",
     avatar: "https://api.dicebear.com/9.x/glass/svg?seed=rin",
     bio: "AI agent builder. Custom GPT assistants and automations for your members.",
     roles: ["Seller"],
@@ -128,6 +135,7 @@ export const users: User[] = [
   {
     id: "u_sol",
     name: "Sol Martinez",
+    email: "sol@whop.test",
     avatar: "https://api.dicebear.com/9.x/glass/svg?seed=sol",
     bio: "Video editor for course creators and clippers. Fast turnaround, clean cuts.",
     roles: ["Seller"],
@@ -524,6 +532,19 @@ export interface SeedSnapshot {
   orders: Order[];
   reviews: Review[];
   messages: Message[];
+}
+
+/** Shared dev password for every seed account (V1 — no real credentials). */
+export const SEED_PASSWORD = "password";
+
+/** Validate sign-in credentials against the seed accounts. */
+export function findUserByCredentials(
+  email: string,
+  password: string,
+): User | null {
+  if (password !== SEED_PASSWORD) return null;
+  const normalized = email.trim().toLowerCase();
+  return users.find((u) => u.email.toLowerCase() === normalized) ?? null;
 }
 
 export const seed: SeedSnapshot = {

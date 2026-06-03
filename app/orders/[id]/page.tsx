@@ -26,7 +26,8 @@ export default function OrderDetailController({
 
   const order = useStore((s) => s.orders.find((o) => o.id === id));
   const users = useStore((s) => s.users);
-  const persona = useStore((s) => s.persona);
+  const currentUserId = useStore((s) => s.currentUserId);
+  const role = useStore((s) => s.role);
   const markDelivered = useStore((s) => s.markDelivered);
   const releaseEscrow = useStore((s) => s.releaseEscrow);
   const cancelOrder = useStore((s) => s.cancelOrder);
@@ -52,14 +53,15 @@ export default function OrderDetailController({
   const buyer = users.find((u) => u.id === order.buyerId);
   const seller = users.find((u) => u.id === order.sellerId);
 
-  // Persona-gated actions. Each is shown only for the correct persona AND
+  const isBuyer = !!currentUserId && role === "buyer";
+  const isSeller = !!currentUserId && role === "seller";
+
+  // Role-gated actions. Each is shown only for the correct role AND
   // the correct order status. The store actions are guarded by the escrow
   // state machine, so illegal calls are silent no-ops regardless.
-  const canMarkDelivered =
-    persona === "seller" && order.status === "in_progress";
-  const canReleaseEscrow =
-    persona === "buyer" && order.status === "delivered";
-  const canCancelOrder = persona === "buyer" && order.status === "held";
+  const canMarkDelivered = isSeller && order.status === "in_progress";
+  const canReleaseEscrow = isBuyer && order.status === "delivered";
+  const canCancelOrder = isBuyer && order.status === "held";
 
   const hasAction = canMarkDelivered || canReleaseEscrow || canCancelOrder;
 
@@ -161,7 +163,7 @@ export default function OrderDetailController({
         </Card>
 
         {/* After release, each party may review the other once. */}
-        {order.status === "released" && persona === "buyer" && (
+        {isBuyer && order.status === "released" && (
           <ReviewForm
             orderId={order.id}
             authorId={order.buyerId}
@@ -170,7 +172,7 @@ export default function OrderDetailController({
             rateeName={seller?.name}
           />
         )}
-        {order.status === "released" && persona === "seller" && (
+        {isSeller && order.status === "released" && (
           <ReviewForm
             orderId={order.id}
             authorId={order.sellerId}

@@ -5,7 +5,7 @@ import { ShieldCheck } from "lucide-react";
 
 import { useStore, PLATFORM_FEE_RATE } from "@/lib/store";
 import { formatCurrency } from "@/lib/format";
-import type { Persona, ServicePackage } from "@/lib/types";
+import type { ServicePackage } from "@/lib/types";
 import {
   Card,
   CardContent,
@@ -19,7 +19,6 @@ interface CheckoutPanelProps {
   selectedPackage: ServicePackage;
   serviceId: string;
   sellerName: string;
-  persona: Persona;
   /** Optional cancel handler from the parent. */
   onCancel?: () => void;
 }
@@ -27,23 +26,24 @@ interface CheckoutPanelProps {
 /**
  * CheckoutPanel — cost breakdown and purchase confirmation.
  * Shows package price, platform fee, total, and an escrow note. Confirm is
- * only available in Buyer mode. On confirm, creates the order via buyGig and
- * navigates to the new order detail page.
+ * only available when signed in with the Buyer role. On confirm, creates the
+ * order via buyGig and navigates to the new order detail page.
  */
 export function CheckoutPanel({
   selectedPackage,
   serviceId,
   sellerName,
-  persona,
   onCancel,
 }: CheckoutPanelProps) {
   const router = useRouter();
   const buyGig = useStore((s) => s.buyGig);
+  const currentUserId = useStore((s) => s.currentUserId);
+  const role = useStore((s) => s.role);
 
   const price = selectedPackage.price;
   const platformFee = Math.round(price * PLATFORM_FEE_RATE);
   const total = price + platformFee;
-  const isBuyer = persona === "buyer";
+  const isBuyer = !!currentUserId && role === "buyer";
 
   const handleConfirm = () => {
     const orderId = buyGig(serviceId, selectedPackage.tier);
@@ -111,7 +111,9 @@ export function CheckoutPanel({
           </Button>
           {!isBuyer && (
             <p className="text-center text-xs text-muted-foreground">
-              Switch to Buyer mode to purchase.
+              {currentUserId
+                ? "Switch to Buyer mode to purchase."
+                : "Sign in as a buyer to purchase."}
             </p>
           )}
         </div>
