@@ -14,6 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { EscrowStepper } from "@/components/escrow-stepper";
+import { ChatController } from "@/components/chat-controller";
 
 export default function OrderDetailController({
   params,
@@ -158,7 +159,9 @@ export default function OrderDetailController({
           </CardContent>
         </Card>
 
-        {/* ChatController (WO-11) and ReviewForm (WO-12) mount below */}
+        <ChatController orderId={order.id} />
+
+        {/* ReviewForm (WO-12) mounts below */}
       </div>
     </main>
   );
