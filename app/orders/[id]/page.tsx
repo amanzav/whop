@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { EscrowStepper } from "@/components/escrow-stepper";
 import { ChatController } from "@/components/chat-controller";
+import { ReviewForm } from "@/components/review-form";
 
 export default function OrderDetailController({
   params,
@@ -159,9 +160,27 @@ export default function OrderDetailController({
           </CardContent>
         </Card>
 
-        <ChatController orderId={order.id} />
+        {/* After release, each party may review the other once. */}
+        {order.status === "released" && persona === "buyer" && (
+          <ReviewForm
+            orderId={order.id}
+            authorId={order.buyerId}
+            rateeUserId={order.sellerId}
+            direction="of_seller"
+            rateeName={seller?.name}
+          />
+        )}
+        {order.status === "released" && persona === "seller" && (
+          <ReviewForm
+            orderId={order.id}
+            authorId={order.sellerId}
+            rateeUserId={order.buyerId}
+            direction="of_buyer"
+            rateeName={buyer?.name}
+          />
+        )}
 
-        {/* ReviewForm (WO-12) mounts below */}
+        <ChatController orderId={order.id} />
       </div>
     </main>
   );
