@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Star } from "lucide-react";
+import { Star, Clock } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { formatCurrency, computeLevel, levelLabel } from "@/lib/format";
@@ -69,13 +69,18 @@ export function GigCard({ service, seller }: GigCardProps) {
           <CardTitle className="mt-2 line-clamp-2">{service.title}</CardTitle>
         </CardHeader>
 
-        <CardContent className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <Star className="size-3.5 fill-primary text-primary" />
-          <span className="font-medium text-foreground">
-            {service.ratingAvg.toFixed(1)}
+        <CardContent className="flex items-center gap-3 text-sm text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <Star className="size-3.5 fill-primary text-primary" />
+            <span className="font-medium text-foreground">
+              {service.ratingAvg.toFixed(1)}
+            </span>
+            <span>({service.reviewCount})</span>
           </span>
-          <span>({service.reviewCount})</span>
-          <span className="ml-auto">{deliveryDays} day delivery</span>
+          <span className="inline-flex items-center gap-1.5">
+            <Clock className="size-3.5" />
+            {deliveryDays} day delivery
+          </span>
         </CardContent>
 
         <CardFooter className="justify-between">

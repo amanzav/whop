@@ -187,7 +187,7 @@ function BuyerView({
               <Link
                 key={seller.id}
                 href={`/profile/${seller.id}`}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-card px-4 py-3 ring-1 ring-foreground/10 transition-colors hover:bg-muted/50"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-card px-4 py-3 ring-1 ring-foreground/10 transition-all outline-none hover:bg-muted/50 hover:ring-foreground/20 focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 <div className="flex items-center gap-3">
                   <Avatar>

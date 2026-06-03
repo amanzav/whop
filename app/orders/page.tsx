@@ -25,19 +25,19 @@ const STATUS_META: Record<
   held: {
     label: "In escrow",
     badgeVariant: "secondary",
-    dot: "bg-amber-500",
+    dot: "bg-lemon",
     active: true,
   },
   in_progress: {
     label: "In progress",
     badgeVariant: "secondary",
-    dot: "bg-blue-500",
+    dot: "bg-primary",
     active: true,
   },
   delivered: {
     label: "Delivered",
     badgeVariant: "secondary",
-    dot: "bg-violet-500",
+    dot: "bg-foreground",
     active: true,
   },
   released: {
@@ -69,12 +69,16 @@ function OrderRow({
     <Link
       href={`/orders/${order.id}`}
       className={cn(
-        "group flex items-center gap-4 rounded-xl border border-border bg-card px-4 py-4 ring-1 ring-foreground/5 transition-colors hover:bg-muted/50",
-        !meta.active && "opacity-75",
+        "group flex items-center gap-4 rounded-xl border border-border bg-card px-4 py-4 ring-1 ring-foreground/5 transition-all hover:border-foreground/20 hover:bg-muted/50",
+        !meta.active && "opacity-70 hover:opacity-100",
       )}
     >
       <span
-        className={cn("size-2 shrink-0 rounded-full", meta.dot)}
+        className={cn(
+          "size-2 shrink-0 rounded-full ring-4 ring-inset",
+          meta.dot,
+          meta.active ? "ring-foreground/5" : "ring-transparent",
+        )}
         aria-hidden
       />
 

@@ -47,7 +47,13 @@ export default function SignInPage() {
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-16">
+    <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center gap-6 px-4 py-16">
+      <div className="flex items-center gap-2 font-semibold tracking-tight">
+        <span className="grid size-7 place-items-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
+          W
+        </span>
+        <span>Whop Marketplace</span>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">Sign in to Whop Marketplace</CardTitle>

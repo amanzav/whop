@@ -51,34 +51,43 @@ export function NavigationShell() {
   const links = authenticated ? LINKS_BY_ROLE[role] : GUEST_LINKS;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-6 px-4">
-        <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-          <span className="grid size-6 place-items-center rounded-md bg-primary text-primary-foreground">
+    <header className="sticky top-0 z-40 border-b border-border bg-background/75 backdrop-blur-md">
+      <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-5 px-4">
+        <Link
+          href="/"
+          className="flex shrink-0 items-center gap-2 rounded-full font-semibold tracking-tight outline-none transition-opacity hover:opacity-90 focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          <span className="grid size-6 place-items-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
             W
           </span>
           <span className="hidden sm:inline">Whop Marketplace</span>
         </Link>
 
-        <nav className="flex flex-1 items-center gap-1 overflow-x-auto">
-          {links.map((link) => (
-            <Link
-              key={`${link.label}-${link.href}`}
-              href={link.href}
-              className={cn(
-                "whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition-colors",
-                isActive(pathname, link.href)
-                  ? "bg-card text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
+        <nav className="flex flex-1 items-center gap-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {links.map((link) => {
+            const active = isActive(pathname, link.href);
+            return (
+              <Link
+                key={`${link.label}-${link.href}`}
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50",
+                  active
+                    ? "bg-secondary text-foreground"
+                    : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
-        <RoleContextSwitcher />
-        <AuthControl />
+        <div className="flex shrink-0 items-center gap-3">
+          <RoleContextSwitcher />
+          <AuthControl />
+        </div>
       </div>
     </header>
   );

@@ -47,7 +47,7 @@ export function MatchBadge({
   return (
     <div
       className={cn(
-        "inline-flex flex-col gap-0.5 rounded-lg bg-primary/15 px-3 py-2",
+        "inline-flex flex-col gap-0.5 rounded-lg bg-primary/10 px-3 py-2 ring-1 ring-primary/20",
         className,
       )}
     >

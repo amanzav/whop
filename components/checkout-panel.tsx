@@ -66,6 +66,13 @@ export function CheckoutPanel({
             </span>
           </div>
           <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Delivery</span>
+            <span className="font-medium text-foreground">
+              {selectedPackage.deliveryDays}{" "}
+              {selectedPackage.deliveryDays === 1 ? "day" : "days"}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
             <span className="text-muted-foreground">
               Platform fee ({Math.round(PLATFORM_FEE_RATE * 100)}%)
             </span>
@@ -95,6 +102,7 @@ export function CheckoutPanel({
         <div className="flex flex-col gap-2">
           <Button
             type="button"
+            size="lg"
             onClick={handleConfirm}
             disabled={!isBuyer}
             className="w-full"
@@ -103,14 +111,14 @@ export function CheckoutPanel({
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             onClick={onCancel}
             className="w-full"
           >
             Cancel
           </Button>
           {!isBuyer && (
-            <p className="text-center text-xs text-muted-foreground">
+            <p className="rounded-lg bg-muted/50 px-3 py-2 text-center text-xs text-muted-foreground">
               {currentUserId
                 ? "Switch to Buyer mode to purchase."
                 : "Sign in as a buyer to purchase."}

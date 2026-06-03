@@ -40,11 +40,13 @@ export function PackageTierSelector({
             aria-checked={selected}
             onClick={() => onSelect(pkg.tier)}
             className={cn(
-              "group/tier flex flex-col gap-4 rounded-xl bg-card p-4 text-left text-sm text-card-foreground ring-1 transition-all outline-none",
+              "group/tier relative flex flex-col gap-4 rounded-xl bg-card p-4 text-left text-sm text-card-foreground ring-1 transition-all outline-none",
               "hover:-translate-y-0.5 hover:shadow-md focus-visible:ring-3 focus-visible:ring-ring/50",
               selected
-                ? "border-primary ring-2 ring-primary"
-                : "ring-foreground/10 hover:ring-foreground/20",
+                ? "ring-2 ring-primary"
+                : recommended
+                  ? "ring-1 ring-primary/40 hover:ring-primary/60"
+                  : "ring-foreground/10 hover:ring-foreground/20",
             )}
           >
             <div className="flex items-start justify-between gap-2">
